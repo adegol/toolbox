@@ -3,18 +3,15 @@
         <div class="row-fluid">
             <div class="tabbable tabs-left">
                 <ul class="nav nav-tabs">
-                    <li><a href="#hash" data-toggle="tab">String to hash</a></li>
+                    <li class="active"><a href="#hash" data-toggle="tab">String to hash</a></li>
                     <li><a href="#bas64" data-toggle="tab">Base64 &lt;-&gt; String</a></li>
                     <li><a href="#hex" data-toggle="tab">Hex &lt;-&gt; String</a></li>
-                    <li class="active"><a href="#binary" data-toggle="tab">Binary &lt;-&gt; String</a></li>
+                    <li><a href="#binary" data-toggle="tab">Binary &lt;-&gt; String</a></li>
                 </ul>
 
                 <div class="tab-content">
-                    <div id="md5" class="tab-pane">
+                    <div id="md5" class="tab-pane active">
                         <fieldset>
-                            <script>
-
-                            </script>
                             <legend>String to hash</legend>
                             <form method="post" class="well form-inline">
                                 <input type="hidden" name="type" value="hash">
@@ -116,7 +113,7 @@
                             ?>
                         </fieldset>
                     </div>
-                    <div id="binary" class="tab-pane active">
+                    <div id="binary" class="tab-pane">
                         <fieldset>
                             <legend>Hex &lt;-&gt; String</legend>
                             <form method="post" class="well form-inline">
