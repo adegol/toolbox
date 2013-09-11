@@ -24,6 +24,12 @@
             <ul class="nav">
                 <li class="divider-vertical"></li>
                 <li><a href="index.php">Create new</a></li>
+                <li class="divider-vertical"></li>
+                <li>
+                    <form method="get" action="" class="navbar-search form-inline">
+                        <input type="text" class="search-query" name="query" placeholder="Find paste...">
+                    </form>
+                </li>
             </ul>
         </div>
     </div>

@@ -1,9 +1,12 @@
 <?php include 'header.php'; ?>
     <div class="container-fluid">
         <div class="row-fluid">
+            <?php 
+                $pdo = new PDO(DB_DSN, DB_USERNAME, DB_PASSWORD);
+                if (!isset($_GET['query'])):
+            ?>
             <div class="span9">
                 <?php
-                    $pdo = new PDO(DB_DSN, DB_USERNAME, DB_PASSWORD);
                     if (!empty($_POST) || isset($_GET['view'])) {
                         if (isset($_GET['view'])) {
                             $revision = (isset($_GET['revision'])) ? (int) ($_GET['revision'] + 0) : 1;
@@ -57,6 +60,7 @@
                     <select name="language">
                         <option value="php"<?php echo (!empty($paste) && ($paste->language == 'php')) ? ' selected' : ''; ?>>PHP</option>
                         <option value="python"<?php echo (!empty($paste) && ($paste->language == 'python')) ? ' selected' : ''; ?>>Python</option>
+                        <option value="javascript"<?php echo (!empty($paste) && ($paste->language == 'javascript')) ? ' selected' : ''; ?>>JavaScript</option>
                     </select>
                     <label>Code:</label>
                     <textarea class="input-xlarge span12" name="code"><?php echo (!empty($paste)) ? $paste->source : ''; ?></textarea>
@@ -85,6 +89,37 @@
                 <?php endwhile; ?>
                 </table>
             </div>
+            <?php else: ?>
+            <div class="span12">
+                <?php
+                    $query = "%{$_GET['query']}%";
+                    $stmt = $pdo->prepare('SELECT title,language,slug,revision FROM pastebin WHERE title LIKE :title');
+                    $stmt->execute(array(':title' => $query));
+                    if ($stmt->rowCount() > 0): 
+                ?>
+                <table class="table table-condensed table-striped">
+                    <thead>
+                        <th>Title</th>
+                        <th>Language</th>
+                        <th>Revision</th>
+                        <th>Created</th>
+                    </thead>
+                    <tbody>
+                        <?php while ($paste = $stmt->fetch(PDO::FETCH_OBJ)): ?>
+                        <tr>
+                            <td><a href="?view=<?php echo $paste->slug; ?>"><?php echo $paste->title; ?></a></td>
+                            <td><?php echo $paste->language; ?></td>
+                            <td><?php echo $paste->revision; ?></td>
+                            <td><?php echo $paste->created; ?></td>
+                        </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+                <?php else: ?>
+                No match found
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
         </div>
     </div>
 <?php include 'footer.php'; ?>
