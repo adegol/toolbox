@@ -56,15 +56,15 @@
                 <?php if (isset($paste)): ?>
                 <div class="row-fluid">
                     <div class="span12 well well-small">
-                        <h3>
+                        <h2>
                             <?php echo $paste->title; ?><br />
                             <small>
                                 Revision #<?php echo $paste->revision; ?> -
                                 Created on <?php echo date('Y-m-d', strtotime($paste->created)); ?>
                             </small>
-                        </h3>
+                        </h2>
                         <h4>Description</h4>
-                        <p><?php echo $paste->description; ?></p>
+                        <p><?php echo nl2br($paste->description); ?></p>
                         <hr>
                         <?php echo $geshi->parse_code(); ?>
                     </div>
@@ -76,9 +76,9 @@
                             <label>Title:</label>
                             <input type="text" class="input-xlarge span12" name="title" value="<?php echo (!empty($paste)) ? $paste->title : ''; ?>">
                         </div>
-                        <div class="span1">
+                        <div class="span3">
                             <label>Language:</label>
-                            <select name="language" class="input-xlarge">
+                            <select name="language" class="input-xlarge span12">
                                 <option value="php"<?php echo (!empty($paste) && ($paste->language == 'php')) ? ' selected' : ''; ?>>PHP</option>
                                 <option value="python"<?php echo (!empty($paste) && ($paste->language == 'python')) ? ' selected' : ''; ?>>Python</option>
                                 <option value="javascript"<?php echo (!empty($paste) && ($paste->language == 'javascript')) ? ' selected' : ''; ?>>JavaScript</option>
@@ -110,6 +110,9 @@
                     $stmt->execute(array(':title' => $query));
                     if ($stmt->rowCount() > 0): 
                 ?>
+                <h2>
+                    <small>Found <strong><?php echo $stmt->rowCount(); ?></strong> pastes matching "<?php echo htmlentities($_GET['query']); ?>"</small>
+                </h2>
                 <table class="table table-condensed table-striped">
                     <thead>
                         <th>Title</th>
@@ -145,8 +148,8 @@
                         <tr>
                             <td>
                                 <?php
-                                    $title = substr($paste->title, 0, 25);
-                                    $title .= (strlen($paste->title) > 25) ? '...' : '';
+                                    $title = substr($paste->title, 0, 50);
+                                    $title .= (strlen($paste->title) > 50) ? '...' : '';
                                 ?>
                                 <a href="index.php?view=<?php echo $paste->slug; ?>&amp;revision=<?php echo $paste->revision; ?>"><?php echo $title; ?> <small>(Rev: <?php echo $paste->revision; ?>)</small></a>
                                 <span class="pull-right"><?php echo date('Y-m-d', strtotime($paste->created)); ?></span>

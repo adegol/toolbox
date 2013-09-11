@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Bootstrap -->
     <link href="../../assets/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="../../assets/css/bootstrap-responsive.css" rel="stylesheet">
     <style>
         body {margin-top:50px;}
         textarea[name="code"] {height:550px;}
