@@ -8,7 +8,7 @@
     <link href="../../assets/css/bootstrap.min.css" rel="stylesheet" media="screen">
     <style>
         body {margin-top:50px;}
-        textarea {height:550px;}
+        textarea[name="code"] {height:550px;}
     </style>
 
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->

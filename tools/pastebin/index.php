@@ -22,6 +22,7 @@
                             $created = date('Y-m-d H:i:s');
                             $title = (isset($_POST['title']) && (!empty($_POST['title']))) ? $_POST['title'] : 'Untitled - ' . $created;
                             $language = (isset($_POST['language'])) ? $_POST['language'] : 'php';
+                            $description = (isset($_POST['description'])) ? htmlentities($_POST['description'], ENT_QUOTES) : '';
                             $source = htmlentities($_POST['code'], ENT_QUOTES);
 
                             // Check if we're creating a new revision of an existing code
@@ -36,9 +37,9 @@
                                 $slug = substr($stripped, 0, 10);
                             }
 
-                            $sql = "INSERT INTO pastebin (title, language, source, created, slug, revision)
-                            VALUES ('{$title}', '{$language}', '{$source}', '{$created}', '{$slug}', '{$revision}')";
-                            echo $sql;
+                            $sql = "INSERT INTO pastebin (title, language, source, created, description, slug, revision)
+                            VALUES ('{$title}', '{$language}', '{$source}', '{$created}', '{$description}', '{$slug}', '{$revision}')";
+
                             if ($pdo->query($sql)) {
                                 header("Location: index.php?view={$slug}&revision={$revision}");
                             } else {
@@ -50,23 +51,88 @@
                         $geshi = new GeShi(htmlspecialchars_decode($paste->source, ENT_QUOTES), $paste->language);
                         $geshi->enable_line_numbers(GESHI_FANCY_LINE_NUMBERS, 2);
                         $geshi->set_line_style('background: #fcfcfc;', 'background: #f0f0f0;');
-                        echo $geshi->parse_code();
                     }
                 ?>
+                <?php if (isset($paste)): ?>
+                <div class="row-fluid">
+                    <div class="span12 well well-small">
+                        <h3>
+                            <?php echo $paste->title; ?><br />
+                            <small>
+                                Revision #<?php echo $paste->revision; ?> -
+                                Created on <?php echo date('Y-m-d', strtotime($paste->created)); ?>
+                            </small>
+                        </h3>
+                        <h4>Description</h4>
+                        <p><?php echo $paste->description; ?></p>
+                        <hr>
+                        <?php echo $geshi->parse_code(); ?>
+                    </div>
+                </div>
+                <?php endif; ?>
                 <form method="post" action="" class="well well-small">
-                    <label>Title:</label>
-                    <input type="text" class="input-xlarge span7" name="title" value="<?php echo (!empty($paste)) ? $paste->title : ''; ?>">
-                    <label>Language:</label>
-                    <select name="language">
-                        <option value="php"<?php echo (!empty($paste) && ($paste->language == 'php')) ? ' selected' : ''; ?>>PHP</option>
-                        <option value="python"<?php echo (!empty($paste) && ($paste->language == 'python')) ? ' selected' : ''; ?>>Python</option>
-                        <option value="javascript"<?php echo (!empty($paste) && ($paste->language == 'javascript')) ? ' selected' : ''; ?>>JavaScript</option>
-                    </select>
-                    <label>Code:</label>
-                    <textarea class="input-xlarge span12" name="code"><?php echo (!empty($paste)) ? $paste->source : ''; ?></textarea>
-                    <input type="submit" class="btn btn-success" value="Save">
+                    <div class="row-fluid">
+                        <div class="span9">
+                            <label>Title:</label>
+                            <input type="text" class="input-xlarge span12" name="title" value="<?php echo (!empty($paste)) ? $paste->title : ''; ?>">
+                        </div>
+                        <div class="span1">
+                            <label>Language:</label>
+                            <select name="language" class="input-xlarge">
+                                <option value="php"<?php echo (!empty($paste) && ($paste->language == 'php')) ? ' selected' : ''; ?>>PHP</option>
+                                <option value="python"<?php echo (!empty($paste) && ($paste->language == 'python')) ? ' selected' : ''; ?>>Python</option>
+                                <option value="javascript"<?php echo (!empty($paste) && ($paste->language == 'javascript')) ? ' selected' : ''; ?>>JavaScript</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row-fluid">
+                        <div class="span12">
+                            <label>Description:</label>
+                            <textarea class="input-xlarge span12" style="height:150px;" name="description"><?php echo (!empty($paste)) ? $paste->description : ''; ?></textarea>
+                        </div>
+                    </div>
+                    <div class="row-fluid">
+                        <div class="span12">
+                            <label>Code:</label>
+                            <textarea class="input-xlarge span12" name="code"><?php echo (!empty($paste)) ? $paste->source : ''; ?></textarea>
+                        </div>
+                    </div>
+                    <div class="row-fluid">
+                        <input type="submit" class="btn btn-success" value="Save">
+                    </div>
                 </form>
             </div>
+            <?php else: ?>
+            <div class="span9">
+                <?php
+                    $query = "%{$_GET['query']}%";
+                    $stmt = $pdo->prepare('SELECT title,language,slug,revision,created FROM pastebin WHERE title LIKE :title');
+                    $stmt->execute(array(':title' => $query));
+                    if ($stmt->rowCount() > 0): 
+                ?>
+                <table class="table table-condensed table-striped">
+                    <thead>
+                        <th>Title</th>
+                        <th>Language</th>
+                        <th>Revision</th>
+                        <th>Created</th>
+                    </thead>
+                    <tbody>
+                        <?php while ($paste = $stmt->fetch(PDO::FETCH_OBJ)): ?>
+                        <tr>
+                            <td><a href="?view=<?php echo $paste->slug; ?>"><?php echo $paste->title; ?></a></td>
+                            <td><?php echo $paste->language; ?></td>
+                            <td><?php echo $paste->revision; ?></td>
+                            <td><?php echo date('Y-m-d', strtotime($paste->created)); ?></td>
+                        </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+                <?php else: ?>
+                No match found
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
             <div class="span3 well well-small">
                 <table class="table table-condensed table-striped">
                 <?php
@@ -89,37 +155,6 @@
                 <?php endwhile; ?>
                 </table>
             </div>
-            <?php else: ?>
-            <div class="span12">
-                <?php
-                    $query = "%{$_GET['query']}%";
-                    $stmt = $pdo->prepare('SELECT title,language,slug,revision FROM pastebin WHERE title LIKE :title');
-                    $stmt->execute(array(':title' => $query));
-                    if ($stmt->rowCount() > 0): 
-                ?>
-                <table class="table table-condensed table-striped">
-                    <thead>
-                        <th>Title</th>
-                        <th>Language</th>
-                        <th>Revision</th>
-                        <th>Created</th>
-                    </thead>
-                    <tbody>
-                        <?php while ($paste = $stmt->fetch(PDO::FETCH_OBJ)): ?>
-                        <tr>
-                            <td><a href="?view=<?php echo $paste->slug; ?>"><?php echo $paste->title; ?></a></td>
-                            <td><?php echo $paste->language; ?></td>
-                            <td><?php echo $paste->revision; ?></td>
-                            <td><?php echo $paste->created; ?></td>
-                        </tr>
-                        <?php endwhile; ?>
-                    </tbody>
-                </table>
-                <?php else: ?>
-                No match found
-                <?php endif; ?>
-            </div>
-            <?php endif; ?>
         </div>
     </div>
 <?php include 'footer.php'; ?>
